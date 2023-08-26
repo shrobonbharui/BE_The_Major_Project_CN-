@@ -1,6 +1,15 @@
 const express = require('express');
 const app = express();
 const port = 8080;
+const expresslayouts = require('express-ejs-layouts');
+
+
+app.use(express.static('assets'));
+app.use(expresslayouts);
+
+app.set('layout extractStyles',true);
+app.set('layout extractScripts',true);
+
 
 // USE EXPRESS ROUTES
 app.use('/', require('./routes/index'));
