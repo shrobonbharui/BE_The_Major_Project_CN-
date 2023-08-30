@@ -1,10 +1,11 @@
+const User = require('../models/user')
+
 module.exports.proofile = function(req,res){
    return res.render('user',{
         taitle : "Proofile"
     });
     
 };
-const user = require('../models/user')
 
 // render the sign up page
 module.exports.signUp = function(req,res){
@@ -20,45 +21,59 @@ module.exports.signIn = function(req,res){
     })
 };
 
+// sign up and create a session for the user
 module.exports.create = function(req,res){
-    if(req.body.password != req.body.confirm_passwor){
+    if(req.body.password != req.body.confirm_password){
         return res.redirect('back');
     };
-    user.findOne({email: req.body.email}, function(err, user){
+    User.findOne({email: req.body.email}).then(function(err,user){
         if(err){console.log('error in finding user in signing up'); return}
+       
+       else if (!user){User.create(req.body).then(function(user){
+            console.log(user);
 
-        if (!user){user.create(req.body, function(err, user){
-                if(err){console.log('error in creating user while signing up'); return}
+            // if(err){console.log('error in creating user while signing up'); return};
 
-                return res.redirect('/users/sign_in');
+            return res.redirect('/users/sign_in')
             });
-        }else{
+       }else{
             return res.redirect('back');
         };
+    });
+
+;
+}
+
+// sign in and create a session for the user
+module.exports.createSession = function(req,res){
+    // steps to authenticate
+    // find the user
+    User.findOne({email: req.body.email}).then(function(user){
+
+
+        // if(err){console.log('error in finding user in signing in'); return}
+
+
+
+        // handle user found
+        if (user){
+            // handle password which doesn't match
+            if (user.password != req.body.password){
+                return res.redirect('back');
+            }
+
+            // handle session creation
+            res.cookie('user_id', user.id);
+            return res.redirect('/users/proofile');
+
+        }
+        else{
+            // handle user not found
+
+            return res.redirect('back');
+        }
+
 
     });
-}
-// module.exports.create = function(req, res){
-//     if (req.body.password != req.body.confirm_password){
-//         return res.redirect('back');
-//     }
-
-//     user.findOne({email: req.body.email}, function(err, user){
-//         if(err){console.log('error in finding user in signing up'); return}
-
-//         if (!user){
-//             user.create(req.body, function(err, user){
-//                 if(err){console.log('error in creating user while signing up'); return}
-
-//                 return res.redirect('/users/sign-in');
-//             })
-//         }else{
-//             return res.redirect('back');
-//         }
-
-//     });
-// }
-
-module.exports.createSession = function(req,res){
     
 }
